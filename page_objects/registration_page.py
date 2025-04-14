@@ -1,11 +1,14 @@
 import os
 from data.users import User
-from selene import browser, have
+from selene import browser, have, be, by
+from tests.constant import THANKS_FOR_SUBMITTING_TEXT
 
 
 class RegistrationPage:
     def open(self):
         browser.open('/automation-practice-form')
+        browser.execute_script('document.querySelector("footer").remove()')
+        browser.execute_script('document.querySelector("#fixedban").remove()')
     def fill_first_name(self, value):
         browser.element('#firstName').type(value)
         return self
@@ -32,14 +35,19 @@ class RegistrationPage:
         browser.execute_script('document.getElementById("dateOfBirthInput").value = ""')
         self.date_of_birth.send_keys(f'{day} {month} {year}').press_enter()
 
-   # def fill_in_subjects(self, value):
-    #    browser.element('#subjectsInput').type(value).press_enter()
+    def fill_subject(self, value):
+        browser.element('#subjectsInput').click()
+        browser.element('#subjectsInput').type(value)
+        browser.element(
+        by.xpath(f'//div[contains(@class, "subjects-auto-complete__option") and text()="{value}"]')).click()
 
     def check_hobby(self, value):
         browser.all('.custom-control-label').element_by(have.exact_text(value)).click()
 
     def upload_picture(self, value):
-        browser.element('#uploadPicture').send_keys(os.getcwd() + f"/resources/{value}")
+        current_dir = os.path.dirname(os.path.dirname(os.path.abspath(__file__)))
+        file_path = os.path.join(current_dir, "resources", value)
+        browser.element('#uploadPicture').send_keys(file_path)
 
     def fill_in_address(self, value):
         browser.element('#currentAddress').type(value)
@@ -52,6 +60,9 @@ class RegistrationPage:
 
     def submit(self):
         browser.element('#submit').execute_script('element.click()')
+
+    def assert_form_submission_text(self, expected_text):
+        browser.element('#example-modal-sizes-title-lg').should(have.text(expected_text))
 
     def assert_user_data(self, student: User):
         full_name = f'{student.first_name} {student.last_name}'
@@ -80,13 +91,13 @@ class RegistrationPage:
         self.select_gender(student.gender)
         self.fill_number(student.phone_number)
         self.fill_in_date_of_birth(student.date_of_birth)
-        #self.fill_in_subjects(student.subject)
+        self.fill_subject(student.subject)
         self.check_hobby(student.hobby)
         self.upload_picture(student.picture_file)
         self.fill_in_address(student.address)
         self.select_state(student.state)
         self.select_city(student.city)
-        self.submit_form()
+        self.submit()
         self.assert_form_submission_text(THANKS_FOR_SUBMITTING_TEXT)
 
     def should_have_registered(self, student: User):
