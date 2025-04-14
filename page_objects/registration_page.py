@@ -1,6 +1,6 @@
 import os
 
-from selene import browser, have
+from selene import browser, have, be
 
 class RegistrationPage:
     def open(self):
@@ -25,10 +25,13 @@ class RegistrationPage:
         browser.element('.react-datepicker__year-select').type(year)
         browser.element('.react-datepicker__month-select').type(month)
         browser.element(f'.react-datepicker__day--00{day}').click()
+
     def fill_subject(self, value):
-        browser.element('#subjectsInput').send_keys(value).press_enter()
+        browser.element('#subjectsInput').send_keys(value)
+
     def check_hobby(self, value):
         browser.all('.custom-control-label').element_by(have.exact_text(value)).click()
+
     def upload_picture(self, value):
         browser.element('#uploadPicture').send_keys(os.getcwd() + f"/resources/{value}")
 
