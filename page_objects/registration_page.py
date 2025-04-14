@@ -1,10 +1,11 @@
 import os
-
-from selene import browser, have, be
+from selene import browser, have, be, by
 
 class RegistrationPage:
     def open(self):
         browser.open('/automation-practice-form')
+        browser.execute_script('document.querySelector("footer").remove()')
+        browser.execute_script('document.querySelector("#fixedban").remove()')
     def fill_first_name(self, value):
         browser.element('#firstName').type(value)
         return self
@@ -27,13 +28,21 @@ class RegistrationPage:
         browser.element(f'.react-datepicker__day--00{day}').click()
 
     def fill_subject(self, value):
-        browser.element('#subjectsInput').send_keys(value)
+        browser.element('#subjectsInput').click()
+        browser.element('#subjectsInput').type(value)
+        browser.element(
+        by.xpath(f'//div[contains(@class, "subjects-auto-complete__option") and text()="{value}"]')).click()
+
 
     def check_hobby(self, value):
-        browser.all('.custom-control-label').element_by(have.exact_text(value)).click()
+        browser.element('[for=hobbies-checkbox-1]').click()
+        browser.element('[for=hobbies-checkbox-2]').click()
+        browser.element('[for=hobbies-checkbox-3]').click()
 
     def upload_picture(self, value):
-        browser.element('#uploadPicture').send_keys(os.getcwd() + f"/resources/{value}")
+        current_dir = os.path.dirname(os.path.dirname(os.path.abspath(__file__)))
+        file_path = os.path.join(current_dir, "resources", value)
+        browser.element('#uploadPicture').send_keys(file_path)
 
     def fill_in_address(self, value):
         browser.element('#currentAddress').type(value)

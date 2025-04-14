@@ -10,7 +10,7 @@ def test_complete_form():
     registration_page.select_gender('Male')
     registration_page.fill_number('9035645454')
     registration_page.fill_birthday('1997', 'August', '9')
-    registration_page.fill_subject('ma')
+    registration_page.fill_subject('Maths')
     registration_page.check_hobby('Sports')
     registration_page.check_hobby('Reading')
     registration_page.check_hobby('Music')
@@ -23,7 +23,7 @@ def test_complete_form():
     registration_page.assert_user_data(
         'Student Name Papa Carlo', 'Student Email PapaCarlo@example.com',
         'Gender Male', 'Mobile 9035645454', 'Date of Birth 09 August,1997',
-        'Subjects ma', 'Hobbies Sports, Reading, Music',
+        'Subjects Maths', 'Hobbies Sports, Reading, Music',
         'Picture test.png', 'Address Ekb, Russia',
         'State and City NCR Delhi'
     )
