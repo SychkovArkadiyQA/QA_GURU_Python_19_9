@@ -1,6 +1,7 @@
 import os
+from data.users import User
+from selene import browser, have
 
-from selene import browser, have, be
 
 class RegistrationPage:
     def open(self):
@@ -20,14 +21,19 @@ class RegistrationPage:
     def fill_number(self, value):
         browser.element('#userNumber').type(value)
         return self
-    def fill_birthday(self, year, month, day):
-        browser.element('#dateOfBirthInput').click()
-        browser.element('.react-datepicker__year-select').type(year)
-        browser.element('.react-datepicker__month-select').type(month)
-        browser.element(f'.react-datepicker__day--00{day}').click()
 
-    def fill_subject(self, value):
-        browser.element('#subjectsInput').send_keys(value)
+    @property
+    def date_of_birth(self):
+        return browser.element('#dateOfBirthInput')
+
+    def fill_in_date_of_birth(self, date_of_birth):
+        day, month, year = date_of_birth
+        self.date_of_birth.click()
+        browser.execute_script('document.getElementById("dateOfBirthInput").value = ""')
+        self.date_of_birth.send_keys(f'{day} {month} {year}').press_enter()
+
+   # def fill_in_subjects(self, value):
+    #    browser.element('#subjectsInput').type(value).press_enter()
 
     def check_hobby(self, value):
         browser.all('.custom-control-label').element_by(have.exact_text(value)).click()
@@ -47,8 +53,42 @@ class RegistrationPage:
     def submit(self):
         browser.element('#submit').execute_script('element.click()')
 
-    def assert_user_data(self, *values):
-        browser.all('tbody tr').should(have.exact_texts(values))
+    def assert_user_data(self, student: User):
+        full_name = f'{student.first_name} {student.last_name}'
+        full_birthday = f'{student.date_of_birth[0]} {student.date_of_birth[1]},{student.date_of_birth[2]}'
+        expected_values = [
+            f'Student Name {full_name}',
+            f'Student Email {student.email}',
+            f'Gender {student.gender}',
+            f'Mobile {student.phone_number}',
+            f'Date of Birth {full_birthday}',
+            f'Subjects {student.subject}',
+            f'Hobbies {student.hobby}',
+            f'Picture {student.picture_file}',
+            f'Address {student.address}',
+            f'State and City {student.state} {student.city}'
+        ]
+        browser.all("tbody tr").should(have.exact_texts(*expected_values))
 
     def close_submission_form(self):
         browser.element('#closeLargeModal').click()
+
+    def register(self, student: User):
+        self.fill_first_name(student.first_name)
+        self.fill_last_name(student.last_name)
+        self.fill_email(student.email)
+        self.select_gender(student.gender)
+        self.fill_number(student.phone_number)
+        self.fill_in_date_of_birth(student.date_of_birth)
+        #self.fill_in_subjects(student.subject)
+        self.check_hobby(student.hobby)
+        self.upload_picture(student.picture_file)
+        self.fill_in_address(student.address)
+        self.select_state(student.state)
+        self.select_city(student.city)
+        self.submit_form()
+        self.assert_form_submission_text(THANKS_FOR_SUBMITTING_TEXT)
+
+    def should_have_registered(self, student: User):
+        self.assert_user_data(student)
+        self.close_submission_form()
